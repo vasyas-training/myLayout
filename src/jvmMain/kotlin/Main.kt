@@ -76,26 +76,31 @@ fun customView() {
 @Composable
 fun CircleLayout(
     modifier: Modifier = Modifier.fillMaxSize(),
-    colors: List<Color> = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.surfaceVariant),
+    colors: List<Color> = listOf(
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.primaryContainer,
+        MaterialTheme.colorScheme.surfaceVariant
+    ),
     randomColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val centerColor = MaterialTheme.colorScheme.primaryContainer
     var placeableSize by remember { mutableStateOf(0) }
-    var side by remember {
-        mutableStateOf(0.0f)
-    }
 
     // Отрисовывем задний фон
     Canvas(modifier = modifier) {
-        side = minOf(this.size.height, this.size.width)
+        val side = minOf(this.size.height, this.size.width)
         // println("not this side = ${side}")
 
         val sweepAngle = 360.0f / placeableSize
         var startAngle = 0f
         repeat(placeableSize) {
             drawArc(
-                if (randomColor) Color(Random.nextInt(0, 360 ), Random.nextInt(0, 360 ),Random.nextInt(0, 360 ) ) else colors[it % colors.size],
+                if (randomColor) Color(
+                    Random.nextInt(0, 360),
+                    Random.nextInt(0, 360),
+                    Random.nextInt(0, 360)
+                ) else colors[it % colors.size],
                 startAngle,
                 sweepAngle,
                 true,
@@ -124,21 +129,30 @@ fun CircleLayout(
                 this.center.y
             )
         )
+
     }
 
     Layout(
         modifier = modifier,
         content = content
     ) { measurables, constraints ->
-        val side = side.toInt()
-        val sweepAngle = 360.0f / measurables.size
+        placeableSize = measurables.size
+        val side = minOf(constraints.maxWidth, constraints.maxHeight)
+        val sweepAngle = 360.0f / placeableSize
         val R = side / 2.0f
 
         // Длина средней хорды * 0.8
-        val minVal =  ((R * PI) / (measurables.size * 1.2)).toInt()
+        var minVal = ((R * PI) / (measurables.size * 1.2)).toInt()
+
+
+
+        if (minVal == 0) {
+            minVal = (R / 2).toInt()
+        }
+
 
         // Задаю свои параметры для элементов
-        val myConstraints = Constraints(0, minVal, side / 20, minVal)
+        val myConstraints = Constraints(0, minVal, 0, minVal)
 
         // По  хорошему здесь реализовать логика подбору по элемену
         val placeables = measurables.map { measurable ->
@@ -147,37 +161,55 @@ fun CircleLayout(
 
         }
 
-        placeableSize = placeables.size
-
 
         // println("this side = ${side}")
 
         layout(side, side) {
+
             // Track the y co-ord we have placed children up to
             var angle = 0f
 
             val centerPos = Pair(side / 2.0f, side / 2.0f)
 
 
-            // Отрисовка layout
-            placeables.forEachIndexed { index, placeable ->
-                // Position item on the screen
-                // measurables[index].minIntrinsicWidth(placeable.height) - получает длину объекта, который у нас есть,
-                // сделано для корректного отображение объекта без смещения
-                // Находим x и y по формуле: координата центра плюс радиус умноженный на cos радианы половины угла.
-                // То есть центр.
-                placeable.placeRelative(
+            if (placeableSize == 1){
+                placeables[0].placeRelative(
                     x = (centerPos.first + R / 2 * cos(
                         Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
-                    )).toInt() - measurables[index].minIntrinsicWidth(placeable.height) / 2,
+                    )).toInt(),
                     y = (centerPos.second + R / 2 * sin(
                         Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
-                    )).toInt() - measurables[index].minIntrinsicHeight(placeable.width) / 2
+                    )).toInt()
                 )
+            } else {
+                // Отрисовка layout
+                placeables.forEachIndexed { index, placeable ->
+                    // Position item on the screen
+                    // measurables[index].minIntrinsicWidth(placeable.height) - получает длину объекта, который у нас есть,
+                    // сделано для корректного отображение объекта без смещения
+                    // Находим x и y по формуле: координата центра плюс радиус умноженный на cos радианы половины угла.
+                    // То есть центр.
+                    var minusX = measurables[index].minIntrinsicWidth(placeable.height) / 2
+                    var minusY = measurables[index].minIntrinsicWidth(placeable.height) / 2
+                    if (minusX > minVal){
+                        minusX = minVal / 2
+                    }
+                    if (minusY > minVal){
+                        minusY = minVal / 2
+                    }
+                    placeable.placeRelative(
+                        x = (centerPos.first + R / 2 * cos(
+                            Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
+                        )).toInt() - minusX,
+                        y = (centerPos.second + R / 2 * sin(
+                            Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
+                        )).toInt() - minusY
+                    )
 
-                angle += sweepAngle
+                    angle += sweepAngle
 
 
+                }
             }
         }
     }
@@ -193,7 +225,7 @@ fun App() {
 
     MaterialTheme {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            var counter by remember { mutableStateOf(10) }
+            var counter by remember { mutableStateOf(1) }
 
             Box(Modifier.size(600.dp)) {
 
@@ -201,7 +233,9 @@ fun App() {
                 CircleLayout(modifier = Modifier.fillMaxSize().padding(20.dp)) {
                     repeat(counter) {
                         // Text("Test $it", softWrap = true)
-                        Image(painterResource("test.jpg"), null)
+                        Button(onClick = {}) {
+                            Text("Test $it")
+                        }
                     }
                 }
             }
@@ -213,7 +247,7 @@ fun App() {
                             visible = false
                             repeat(1) {
                                 delay(10)
-                                counter++
+                                counter += 1
 
                             }
                             visible = true
