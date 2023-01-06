@@ -2,6 +2,7 @@
 import androidx.compose.animation.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 
 import androidx.compose.ui.window.Window
@@ -15,13 +16,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 import kotlin.random.Random
 
 @Composable
@@ -80,10 +82,13 @@ fun CircleLayout(
 ) {
     val centerColor = MaterialTheme.colorScheme.primaryContainer
     var placeableSize by remember { mutableStateOf(0) }
+    var side by remember {
+        mutableStateOf(0.0f)
+    }
 
     // Отрисовывем задний фон
     Canvas(modifier = modifier) {
-        val side = minOf(this.size.height, this.size.width)
+        side = minOf(this.size.height, this.size.width)
         // println("not this side = ${side}")
 
         val sweepAngle = 360.0f / placeableSize
@@ -125,14 +130,25 @@ fun CircleLayout(
         modifier = modifier,
         content = content
     ) { measurables, constraints ->
+        val side = side.toInt()
+        val sweepAngle = 360.0f / measurables.size
+        val R = side / 2.0f
+
+        // Длина средней хорды * 0.8
+        val minVal =  ((R * PI) / (measurables.size * 1.2)).toInt()
+
+        // Задаю свои параметры для элементов
+        val myConstraints = Constraints(0, minVal, side / 20, minVal)
+
+        // По  хорошему здесь реализовать логика подбору по элемену
         val placeables = measurables.map { measurable ->
             // Measure each children
-            measurable.measure(constraints)
+            measurable.measure(myConstraints)
+
         }
 
         placeableSize = placeables.size
 
-        val side = minOf(constraints.maxWidth, constraints.maxHeight)
 
         // println("this side = ${side}")
 
@@ -140,9 +156,8 @@ fun CircleLayout(
             // Track the y co-ord we have placed children up to
             var angle = 0f
 
-            val sweepAngle = 360.0f / placeables.size
             val centerPos = Pair(side / 2.0f, side / 2.0f)
-            val R = side / 2.0f
+
 
             // Отрисовка layout
             placeables.forEachIndexed { index, placeable ->
@@ -157,8 +172,9 @@ fun CircleLayout(
                     )).toInt() - measurables[index].minIntrinsicWidth(placeable.height) / 2,
                     y = (centerPos.second + R / 2 * sin(
                         Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
-                    )).toInt()
+                    )).toInt() - measurables[index].minIntrinsicHeight(placeable.width) / 2
                 )
+
                 angle += sweepAngle
 
 
@@ -177,14 +193,15 @@ fun App() {
 
     MaterialTheme {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            var counter by remember { mutableStateOf(1) }
+            var counter by remember { mutableStateOf(10) }
 
-            Box(Modifier.size(500.dp)) {
+            Box(Modifier.size(600.dp)) {
 
                 // customView()
                 CircleLayout(modifier = Modifier.fillMaxSize().padding(20.dp)) {
                     repeat(counter) {
-                        Text("Test")
+                        // Text("Test $it", softWrap = true)
+                        Image(painterResource("test.jpg"), null)
                     }
                 }
             }
