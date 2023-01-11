@@ -3,6 +3,8 @@ package layouts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -11,6 +13,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -18,7 +21,7 @@ import kotlin.random.Random
 
 @Composable
 fun CircleLayout(
-    modifier: Modifier = Modifier.fillMaxSize(),
+    modifier: Modifier = Modifier.size(250.dp),
     colors: List<Color> = listOf(
         MaterialTheme.colorScheme.primary,
         MaterialTheme.colorScheme.primaryContainer,
@@ -101,7 +104,7 @@ fun CircleLayout(
             // Задаю свои параметры для элементов
             val myConstraints = Constraints(0, minVal, 0, minVal)
 
-            // По  хорошему здесь реализовать логика подбору по элемену
+            // По  хорошему здесь реализовать логику подбору по элемену
             val placeables = measurables.map { measurable ->
                 // Measure each children
                 measurable.measure(myConstraints)
