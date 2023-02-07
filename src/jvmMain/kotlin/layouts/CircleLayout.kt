@@ -2,8 +2,6 @@ package layouts
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -19,6 +17,20 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
+
+/**
+ * Layout, который распределяет элемент в круге
+ * @param modifier
+ * настройки размеров в пространстве
+ * @param colors
+ * цвета, которые будут у круга
+ * @param randomColor
+ * при ``true``
+ * @param content
+ * содержимое Layout
+ *
+ * @author Панков Вася
+ */
 @Composable
 fun CircleLayout(
     modifier: Modifier = Modifier.size(250.dp),
@@ -33,7 +45,7 @@ fun CircleLayout(
     val centerColor = MaterialTheme.colorScheme.primaryContainer
     var placeableSize by remember { mutableStateOf(0) }
 
-    //  Не обходимо завернуть в Box, чтобы элементы адекватно отрисовывались, то есть друг на другу,
+    //  Необходимо завернуть в Box, чтобы элементы адекватно отрисовывались, то есть друг на другу,
     //  а например не попадали под свойства оборнутых сверху, Column,
     //  возможно можно обернуть в canvas layout или layout canvas(TODO)
     Box(modifier = modifier) {
@@ -60,7 +72,7 @@ fun CircleLayout(
                     ),
                     size = Size(side, side)
                 )
-                startAngle += sweepAngle;
+                startAngle += sweepAngle
             }
             // Отрисовка центра
             drawCircle(
