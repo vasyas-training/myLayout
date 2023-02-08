@@ -1,12 +1,11 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -27,10 +27,11 @@ import layouts.circleLayout
 import layouts.goldenRatioLayout
 import superCircleView.CircleElement
 import superCircleView.superCircleView
+import kotlin.random.Random
 
 
 /**
- * Класс тестирует Layout круга
+ * Функция для теста Layout круга
  */
 @Composable
 fun testCircleLayout() {
@@ -71,7 +72,7 @@ fun testCircleLayout() {
 }
 
 /**
- * Класс тестирует Layout золотого сечения
+ * Функция для теста Layout золотого сечения
  */
 @Composable
 fun testGoldenLayout() {
@@ -115,19 +116,49 @@ fun testGoldenLayout() {
     }
 }
 
+/**
+ * Функция для тестирования колеса выбора
+ */
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun testSuperCircleLayout() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        superCircleView(content = listOf(CircleElement("Test") {
-            Image(painterResource("test.jpg"), "Моя фотка")
-        }, CircleElement("Test", background = Color.Blue) {
-            Image(painterResource("test.jpg"), "Моя фотка")
-        }, CircleElement("Test", background = Color.Yellow) {
-            Image(painterResource("test.jpg"), "Моя фотка")
-        }, CircleElement("Test", background = Color.LightGray) {
-            Image(painterResource("test.jpg"), "Моя фотка")
-        })
+        var text by remember { mutableStateOf("") }
+        val colors = listOf(
+            Color.White,
+            Color.Blue,
+            Color.Black,
+            Color.Green,
+            Color.Red,
+            Color.Magenta,
+            Color.LightGray,
+            Color(150, 0, 255),
+            Color(255, 150, 150),
+            Color(0, 150, 150),
+            Color.Gray
         )
+        if (text != "")
+            AlertDialog(
+                onDismissRequest = { text = "" },
+                buttons = { Button(onClick = { text = "" }) { Text("OK") } },
+                text = { Text("Вы нажали на $text") })
+        val mList = mutableListOf<CircleElement>()
+        for (i in 1..10) {
+            mList.add(
+                CircleElement(
+                    "Test", background = colors[i],
+                    onClick = { text = i.toString() }
+                ) {
+                    Box(modifier = Modifier.size(50.dp).padding(6.dp)) {
+                        Image(
+                            painterResource("test.jpg"), "Моя фотка",
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                })
+        }
+        superCircleView(content = mList, modifier = Modifier.size(500.dp))
+
     }
 
 }
@@ -135,7 +166,6 @@ fun testSuperCircleLayout() {
 
 /**
  * Основная функция приложения
- *
  */
 @Composable
 @Preview

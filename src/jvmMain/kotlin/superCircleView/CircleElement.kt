@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.painter.Painter
 
 /**
  * Элемент CircleView
- * @param painter
- * рисунок, который будет отображаться
+ * @param content
+ * рисунок/контент, который будет отображаться
  * @param description
  * описание при выделении
  * @param onClick
