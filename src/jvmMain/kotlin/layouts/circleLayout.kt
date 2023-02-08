@@ -32,7 +32,7 @@ import kotlin.random.Random
  * @author Панков Вася
  */
 @Composable
-fun CircleLayout(
+fun circleLayout(
     modifier: Modifier = Modifier.size(250.dp),
     colors: List<Color> = listOf(
         MaterialTheme.colorScheme.primary,
@@ -43,11 +43,22 @@ fun CircleLayout(
     content: @Composable () -> Unit
 ) {
     val centerColor = MaterialTheme.colorScheme.primaryContainer
-    var placeableSize by remember { mutableStateOf(0) }
+    var placeableSize = 0
+
+    // Получаем количество элементов заранее
+    Layout(
+        modifier = Modifier.size(0.dp),
+        content = content
+    ) { measurables, constraints ->
+        placeableSize = measurables.size
+        layout(0, 0){
+
+        }
+    }
+
 
     //  Необходимо завернуть в Box, чтобы элементы адекватно отрисовывались, то есть друг на другу,
     //  а например не попадали под свойства оборнутых сверху, Column,
-    //  возможно можно обернуть в canvas layout или layout canvas(TODO)
     Box(modifier = modifier) {
         // Отрисовывем задний фон
         Canvas(modifier = modifier) {
@@ -92,25 +103,26 @@ fun CircleLayout(
                 )
             )
 
+
         }
 
         Layout(
             modifier = modifier,
             content = content
         ) { measurables, constraints ->
-            placeableSize = measurables.size
             val side = minOf(constraints.maxWidth, constraints.maxHeight)
             val sweepAngle = 360.0f / placeableSize
-            val R = side / 2.0f
+            val r = side / 2.0f
 
             // Длина средней хорды * 0.8
-            var minVal = ((R * PI) / (measurables.size * 1.2)).toInt()
+            var minVal = ((r * PI) / (placeableSize)).toInt()
 
 
 
-            if (minVal == 0) {
-                minVal = (R / 2).toInt()
-            }
+//            if (minVal == 0) {
+//                println((r * PI) / (measurables.size * 1.2))
+//                minVal = (r / 2).toInt()
+//            }
 
 
             // Задаю свои параметры для элементов
@@ -134,36 +146,57 @@ fun CircleLayout(
                 val centerPos = Pair(side / 2.0f, side / 2.0f)
 
 
+                /*  Существует проблема располажения в середине части окружности от количества элементов
+                    Возможно из-за погрешности, но исправление этого пока весьма странное и выглядит как костыль
+                 */
+
                 if (placeableSize == 1) {
                     placeables[0].placeRelative(
-                        x = (centerPos.first + R / 2 * cos(
+                        x = (centerPos.first + r / 2 * cos(
                             Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
                         )).toInt(),
-                        y = (centerPos.second + R / 2 * sin(
+                        y = (centerPos.second + r / 2 * sin(
                             Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
-                        )).toInt()
+                        )).toInt() + minVal / 4
                     )
-                } else {
+                } else if (placeableSize < 6) {
+                    val minusX = (minVal / 2.2).toInt()
+
+                    val minusY = (minVal / 4).toInt()
+                    placeables.forEach { placeable ->
+                        placeable.placeRelative(
+                            x = (centerPos.first + r / 2 * cos(
+                                Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
+                            )).toInt() - minusX,
+                            y = (centerPos.second + r / 2 * sin(
+                                Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
+                            )).toInt() - minusY
+                        )
+                        angle += sweepAngle
+                    }
+                }
+                else {
                     // Отрисовка layout
-                    placeables.forEachIndexed { index, placeable ->
+                    placeables.forEach { placeable ->
                         // Position item on the screen
                         // measurables[index].minIntrinsicWidth(placeable.height) - получает длину объекта, который у нас есть,
                         // сделано для корректного отображение объекта без смещения
                         // Находим x и y по формуле: координата центра плюс радиус умноженный на cos радианы половины угла.
                         // То есть центр.
-                        var minusX = measurables[index].minIntrinsicWidth(placeable.height) / 2
-                        var minusY = measurables[index].minIntrinsicWidth(placeable.height) / 2
-                        if (minusX > minVal) {
-                            minusX = minVal / 2
-                        }
-                        if (minusY > minVal) {
-                            minusY = minVal / 2
-                        }
+                        /*var minusX = measurables[index].minIntrinsicWidth(placeable.height) / 2
+                        var minusY = measurables[index].minIntrinsicHeight(placeable.width) / 2
+                        println(minusX)
+                        println(minusY)
+                        println(minVal)*/
+                        val minusX = minVal / 2
+
+                        val minusY = minVal / 2
+
                         placeable.placeRelative(
-                            x = (centerPos.first + R / 2 * cos(
+                            x = (centerPos.first + r / 2 * cos(
                                 Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
                             )).toInt() - minusX,
-                            y = (centerPos.second + R / 2 * sin(
+                            y = (centerPos.second + r / 2 * sin(
                                 Math.toRadians((angle + sweepAngle / 2).toDouble()).toFloat()
                             )).toInt() - minusY
                         )

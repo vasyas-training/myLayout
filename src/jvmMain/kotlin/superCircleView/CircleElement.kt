@@ -21,9 +21,9 @@ import androidx.compose.ui.graphics.painter.Painter
 
 
 data class CircleElement(
-    val painter: Painter,
     val description: String,
     val onClick: () -> Unit = {},
-    val background: Color = Color.Gray)
+    val background: Color = Color.Gray,
+    val content: @Composable () -> Unit)
 
 

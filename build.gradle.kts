@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform") version "1.7.20"
     id("org.jetbrains.compose") version "1.2.0"
+    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 group = "com.example"

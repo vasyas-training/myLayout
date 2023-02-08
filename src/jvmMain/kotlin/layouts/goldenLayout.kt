@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
  * @author Панков Вася
  */
 @Composable
-fun GoldenRatioLayout(
+fun goldenRatioLayout(
     modifier: Modifier = Modifier.size(340.dp, 210.dp),
     content: @Composable () -> Unit
 ) {
@@ -75,7 +75,7 @@ fun GoldenRatioLayout(
                         x += constraintsList[index].maxWidth
                     }
                 } else {
-                    val y_temp = y
+                    // val y_temp = y
                     if (isReverse) {
                         x -= constraintsList[index].maxWidth
                         if (index + 1 != measurables.size) {
